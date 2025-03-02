@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Immigration Resource Database</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet CSS (CDN) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+    integrity="sha256-sA+eCH4fGQQLXQzSj8o1I+AU71xo6GSN1B0rH72ym6k="
+    crossorigin=""
+  />
+
+  <!-- Your site-wide CSS -->
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Additional local styles specifically for Leaflet map on dark theme */
+    #map {
+      width: 100%;
+      height: 600px; /* Adjust as needed */
+      margin: 0 auto;
+      border-radius: 8px;
+    }
+    /* Darker background behind the map container to blend with dark theme */
+    .map-wrapper {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .resource-panel {
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      padding: 15px;
+      min-height: 120px;
+    }
+    .resource-panel h2 {
+      margin-bottom: 10px;
+      color: #ffdd59;
+    }
+    .resource-panel ul {
+      list-style: inside disc;
+      margin-left: 20px;
+    }
+    /* Leaflet default controls might look better with a subtle override for a dark theme */
+    .leaflet-control {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .leaflet-bar a {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+    .leaflet-bar a:hover {
+      background-color: rgba(255, 255, 255, 0.35);
+      color: #000;
+    }
+  </style>
+</head>
+<body class="dark-theme"><!-- We default to dark theme here -->
+  <!-- Alert Banner -->
+  <div id="alert-banner">
+    <p>Important Update: Applications for the next cycle are now open! Apply today!</p>
+  </div>
+
+  <!-- Navigation Bar -->
+  <nav>
+    <div class="nav-left">
+      <h1>First-Gen Caucus</h1>
+    </div>
+    <div class="nav-right">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="get-involved.html">Get Involved</a>
+      <a href="donate.html">Donate</a>
+      <a href="immigration.html" class="active">Immigration Resources</a>
+      <button id="theme-toggle">Toggle Theme</button>
+    </div>
+  </nav>
+
+  <!-- Page Hero Banner -->
+  <section class="hero-section immigration-hero">
+    <div class="hero-content fade-in-on-scroll">
+      <h2>Immigration Resource Database</h2>
+      <p>
+        A collaboration between the First-Gen Caucus and the Latinx Caucus of HSDA.<br/>
+        Click on a state or territory to see available resources.
+      </p>
+    </div>
+  </section>
+
+  <main class="section-wrapper fade-in-on-scroll">
+    <div class="map-wrapper">
+      <!-- Leaflet Map Container -->
+      <div id="map"></div>
+      <!-- Resource Display Panel -->
+      <div class="resource-panel" id="resource-panel">
+        <h2 id="resource-state-name">Select a State or Territory</h2>
+        <div id="resource-content">
+          <p>Please click on a state or territory on the map to see its resources.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 First-Gen & Latinx Caucuses of HSDA</p>
+  </footer>
+
+  <!-- Leaflet JS (CDN) -->
+  <script
+    src="https://unpkg.com/leaflet/dist/leaflet.js"
+    integrity="sha256-gZ6aJ6yLKX79b4GiZ7XQbXLaX4yrElJpuhHx3rBMmEk="
+    crossorigin=""
+  ></script>
+
+  <!-- US States & Territories GeoJSON. The file is large, so you could store it externally
+       or within a separate "statesTerritories.js". For demonstration, we'll reference an
+       external link or a simplified version. -->
+  <script src="us-states-territories.js"></script>
+  <!-- ^ This script should define a variable `statesData` that is a valid GeoJSON object
+       for all 50 states + DC + PR + GU + VI + etc. -->
+  
+  <!-- Your site-wide JS, including code for theme toggle, fade-in, etc. -->
+  <script src="script.js"></script>
+
+  <script>
+  /*************************************************************
+   *   IMMIGRATION RESOURCE MAP WITH LEAFLET
+   *************************************************************/
+  // 1) Create a dictionary of resources by postal code (or by the name).
+  //    Edit these <li> items or add new ones as needed. 
+  //    E.g. "CA", "TX", "PR", "GU", etc.
+  const stateResources = {
+    "AL": "<ul><li>AL Resource 1: <a href='#'>Link</a></li></ul>",
+    "AK": "<ul><li>AK Resource 1</li></ul>",
+    "AZ": "<ul><li>AZ Resource 1</li><li>AZ Resource 2</li></ul>",
+    "AR": "<p>No resources yet for AR.</p>",
+    "CA": "<ul><li>CA Org 1: <a href='#'>Link</a></li><li>CA Org 2</li></ul>",
+    "CO": "<ul><li>CO Resource 1</li></ul>",
+    /* ... fill in the rest or update over time ... */
+    "TX": "<ul><li>Texas Immigration Aid</li><li>Local Nonprofit Info</li></ul>",
+    "DC": "<ul><li>DC Resource 1</li></ul>",
+    "PR": "<ul><li>PR Resource 1</li></ul>",
+    "GU": "<ul><li>GU Resource 1</li></ul>",
+    "VI": "<ul><li>VI Resource 1</li></ul>",
+    "AS": "<ul><li>AS Resource 1</li></ul>",
+    // etc... for all states & territories
+  };
+
+  // 2) Initialize the Leaflet map
+  const map = L.map('map', {
+    // Center on the continental US by default
+    center: [37.8, -96.9],
+    zoom: 4,
+    minZoom: 3,
+    maxZoom: 10,
+  });
+
+  // 3) Add a tile layer (OpenStreetMap) – requires internet connection
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  }).addTo(map);
+
+  // 4) Style function for the GeoJSON polygons
+  function styleFeature(feature) {
+    return {
+      fillColor: '#888',
+      weight: 1,
+      opacity: 1,
+      color: '#fff',
+      fillOpacity: 0.3
+    };
+  }
+
+  // 5) Highlight on hover
+  function highlightFeature(e) {
+    const layer = e.target;
+    layer.setStyle({
+      weight: 2,
+      color: '#fff',
+      fillColor: '#fc5c65',
+      fillOpacity: 0.6,
+    });
+    layer.bringToFront();
+  }
+
+  function resetHighlight(e) {
+    geojson.resetStyle(e.target);
+  }
+
+  // 6) On click, show resources
+  function onFeatureClick(e) {
+    const layer = e.target;
+    const properties = layer.feature.properties;
+    // Some datasets store the postal code in `properties.postal` or `properties.STATE`
+    // For demonstration, assume we have a property "postal" or "abbr"
+    const stateAbbr = properties.postal || properties.STATE || properties.name;
+    // If we have resources for that code, show them
+    const resourcePanel = document.getElementById('resource-panel');
+    const stateTitle = document.getElementById('resource-state-name');
+    const resourceContent = document.getElementById('resource-content');
+    
+    stateTitle.textContent = `Resources for ${stateAbbr}`;
+    if (stateResources[stateAbbr]) {
+      resourceContent.innerHTML = stateResources[stateAbbr];
+    } else {
+      resourceContent.innerHTML = `<p>No resources added yet for ${stateAbbr}.</p>`;
+    }
+  }
+
+  // 7) For each feature, define event listeners
+  function onEachFeature(feature, layer) {
+    layer.on({
+      mouseover: highlightFeature,
+      mouseout: resetHighlight,
+      click: onFeatureClick
+    });
+  }
+
+  // 8) Load the GeoJSON data from `statesData` (provided by `us-states-territories.js`)
+  const geojson = L.geoJson(statesData, {
+    style: styleFeature,
+    onEachFeature: onEachFeature
+  }).addTo(map);
+  </script>
+</body>
+</html>

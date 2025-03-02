@@ -455,3 +455,59 @@
 	}
   }
   
+  /* ===============================
+   IMMIGRATION PAGE STYLES
+   =============================== */
+
+/* Special hero for immigration page (optional) */
+.immigration-hero {
+	background: linear-gradient(160deg, #242b3a, #394a6d);
+  }
+  
+  /* Container for the map and resource list side by side */
+  .map-and-resources {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 30px;
+  }
+  
+  /* Map container to hold the SVG */
+  .map-container {
+	flex: 1 1 50%;
+	min-width: 300px;
+	text-align: center;
+  }
+  
+  /* Basic styling for the shapes in the map */
+  .state-shape {
+	cursor: pointer;
+	transition: fill 0.3s;
+  }
+  .state-shape:hover {
+	fill: #fc5c65; /* Highlight on hover */
+  }
+  
+  /* Resource list container: next to the map */
+  .resource-list-container {
+	flex: 1 1 40%;
+	background: rgba(255, 255, 255, 0.05);
+	border-radius: 8px;
+	padding: 20px;
+	min-width: 280px;
+  }
+  .resource-list-container h3 {
+	margin-bottom: 10px;
+	color: #ffdd59; /* Eye-catching color */
+  }
+  .resource-list-container ul {
+	margin-left: 20px;
+	list-style: inside disc;
+  }
+  
+  /* On smaller screens, stack the map below or above the resource list */
+  @media (max-width: 768px) {
+	.map-and-resources {
+	  flex-direction: column;
+	}
+  }
+  

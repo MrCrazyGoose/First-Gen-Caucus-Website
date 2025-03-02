@@ -91,6 +91,40 @@ if (sliderTrack && slides.length > 0) {
   updateSliderPosition();
 }
 
+/******************************************************
+ * IMMIGRATION RESOURCE MAP LOGIC
+ ******************************************************/
+
+// 1. Grab all state shapes from the map
+const stateShapes = document.querySelectorAll('.state-shape');
+
+// 2. Grab the container where we show resources
+const resourceListTitle = document.getElementById('resource-list-title');
+const resourceListContent = document.getElementById('resource-list-content');
+
+// 3. On click of a state, we want to fetch the relevant HTML from the hidden <div>
+stateShapes.forEach(shape => {
+  shape.addEventListener('click', () => {
+    const stateCode = shape.getAttribute('data-state'); // e.g. "CA", "TX"
+    if (!stateCode) return;
+
+    // Build ID of the hidden resources container
+    const resourceDivId = `${stateCode}-resources`;
+    const hiddenDiv = document.getElementById(resourceDivId);
+
+    // If we have content for that state, show it
+    if (hiddenDiv) {
+      resourceListTitle.textContent = `Resources for ${stateCode}`;
+      resourceListContent.innerHTML = hiddenDiv.innerHTML;
+    } else {
+      // If no matching resources found
+      resourceListTitle.textContent = `Resources for ${stateCode}`;
+      resourceListContent.innerHTML = `<p>No resources available yet for ${stateCode}.</p>`;
+    }
+  });
+});
+
+
 // Extra console logs (overuse of JS, for demonstration)
 console.log("Dark theme is set by default. Toggle available if needed!");
 console.log("Event slider is running. Enjoy the transitions!");
