@@ -22,6 +22,7 @@
       <a href="about.html">About</a>
       <a href="get-involved.html" class="active">Get Involved</a>
       <a href="donate.html">Donate</a>
+	  <a href="immigration.html" class="active">Immigration Resources</a>
       <button id="theme-toggle">Toggle Theme</button>
     </div>
   </nav>
@@ -35,36 +36,38 @@
 
   <main>
     <!-- Rotating Event Slider -->
-    <section class="fade-in-on-scroll event-slider section-wrapper">
-      <h2>Upcoming Events</h2>
-      <div class="slider-container">
-        <!-- Slider Wrapper -->
-        <div class="slider-track">
-          <div class="slider-slide" style="background-image: url('https://via.placeholder.com/1000x400?text=Event+1');">
-            <div class="slider-info">
-              <h3>Event 1</h3>
-              <p>Details for Event 1: Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-            </div>
-          </div>
-          <div class="slider-slide" style="background-image: url('https://via.placeholder.com/1000x400?text=Event+2');">
-            <div class="slider-info">
-              <h3>Event 2</h3>
-              <p>Details for Event 2: Aliquam faucibus neque ac diam bibendum fermentum.</p>
-            </div>
-          </div>
-          <div class="slider-slide" style="background-image: url('https://via.placeholder.com/1000x400?text=Event+3');">
-            <div class="slider-info">
-              <h3>Event 3</h3>
-              <p>Details for Event 3: Duis tristique, tellus nec viverra aliquet, enim nisl imperdiet enim.</p>
-            </div>
-          </div>
-        </div>
-        <!-- Slider Controls -->
-        <button class="slider-btn prev-btn">←</button>
-        <button class="slider-btn next-btn">→</button>
-      </div>
-      <p class="slider-help-text">Use the arrows to browse events, or wait for auto-rotation.</p>
-    </section>
+	<div id="slider">
+		<section class="fade-in-on-scroll event-slider section-wrapper">
+		<h2>Upcoming Events</h2>
+		<div class="slider-container">
+			<!-- Slider Wrapper -->
+			<div class="slider-track">
+			<div class="slider-slide" style="background-image: url('https://via.placeholder.com/1000x400?text=Event+1');">
+				<div class="slider-info">
+				<h3>Event 1</h3>
+				<p>Details for Event 1: Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+				</div>
+			</div>
+			<div class="slider-slide" style="background-image: url('https://via.placeholder.com/1000x400?text=Event+2');">
+				<div class="slider-info">
+				<h3>Event 2</h3>
+				<p>Details for Event 2: Aliquam faucibus neque ac diam bibendum fermentum.</p>
+				</div>
+			</div>
+			<div class="slider-slide" style="background-image: url('https://via.placeholder.com/1000x400?text=Event+3');">
+				<div class="slider-info">
+				<h3>Event 3</h3>
+				<p>Details for Event 3: Duis tristique, tellus nec viverra aliquet, enim nisl imperdiet enim.</p>
+				</div>
+			</div>
+			</div>
+			<!-- Slider Controls -->
+			<button class="slider-btn prev-btn">←</button>
+			<button class="slider-btn next-btn">→</button>
+		</div>
+		<p class="slider-help-text">Use the arrows to browse events, or wait for auto-rotation.</p>
+		</section>
+	</div>
 
     <!-- Slack and Action Network Highlight -->
     <section class="highlight-box section-wrapper fade-in-on-scroll">
@@ -83,5 +86,62 @@
   </footer>
 
   <script src="script.js"></script>
+  <script>
+	// ========== ROTATING EVENT SLIDER (Get Involved) ==========
+const sliderTrack = document.querySelector('.slider-track');
+const slides = document.querySelectorAll('.slider-slide');
+const prevBtn = document.querySelector('.prev-btn');
+const nextBtn = document.querySelector('.next-btn');
+
+let currentIndex = 0;
+const totalSlides = slides.length;
+
+/** Move the slider to show the slide at currentIndex */
+function updateSliderPosition() {
+    var slider = document.getElementById('slider');
+    if (slider) {
+        var clientWidth = slider.clientWidth;
+		currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+		updateSliderPosition();
+    } else {
+        console.error('Slider element not found');
+    }
+}
+
+// Go to previous slide
+function slidePrev() {
+  currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+  updateSliderPosition();
+}
+
+// Go to next slide
+function slideNext() {
+  currentIndex = (currentIndex + 1) % totalSlides;
+  updateSliderPosition();
+}
+
+// Auto-rotate every 4 seconds
+let sliderInterval = setInterval(slideNext, 4000);
+
+if (prevBtn && nextBtn) {
+  prevBtn.addEventListener('click', () => {
+    slidePrev();
+    // Reset the auto-rotate timer to avoid quick skipping
+    clearInterval(sliderInterval);
+    sliderInterval = setInterval(slideNext, 4000);
+  });
+
+  nextBtn.addEventListener('click', () => {
+    slideNext();
+    clearInterval(sliderInterval);
+    sliderInterval = setInterval(slideNext, 4000);
+  });
+}
+
+// Initialize position (if the slider elements exist)
+if (sliderTrack && slides.length > 0) {
+  updateSliderPosition();
+}
+  </script>
 </body>
 </html>
